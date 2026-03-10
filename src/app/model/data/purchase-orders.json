@@ -1,0 +1,138 @@
+{
+  "purchaseOrders": [
+    {
+      "id": "po-001",
+      "poNumber": "DI5019501",
+      "poDate": "2025-09-16",
+      "vendor": {
+        "id": "v-001",
+        "code": "M0004",
+        "name": "MILLS & METALS CORPORATION",
+        "address": "123 Industrial Area, Mumbai, Maharashtra 400001",
+        "contactPerson": "Rajesh Kumar",
+        "phone": "+91-22-12345678",
+        "email": "rajesh@millsmetals.com"
+      },
+      "category": "DIRECT",
+      "status": "Unauthorised",
+      "items": [
+        {
+          "id": "item-001",
+          "itemCode": "X5310400B",
+          "itemName": "40 GSM SPUN BONDED CLOTH",
+          "hsnCode": "56039400",
+          "description": "40 GSM SPUN BONDED CLOTH BLACK",
+          "quantity": 1000,
+          "uom": "SQM",
+          "rate": 7.75,
+          "discount": 0,
+          "gst": 12,
+          "amount": 8680
+        },
+        {
+          "id": "item-002",
+          "itemCode": "X6140510LW",
+          "itemName": "120 GSM GLS WHITE",
+          "hsnCode": "56039401",
+          "description": "120 GSM GLS WHITE CIS-E, SIZE -510MM",
+          "quantity": 500,
+          "uom": "KGS",
+          "rate": 45.5,
+          "discount": 5,
+          "gst": 18,
+          "amount": 25556.25
+        }
+      ],
+      "totalValue": 34236.25,
+      "currency": "INR",
+      "paymentTerms": "30 Days from the date of Receipt of Material",
+      "shippingAddress": "U01 (C157) R/S, Indica Industries Pvt. Ltd.",
+      "remarks": "Urgent delivery required"
+    },
+    {
+      "id": "po-002",
+      "poNumber": "DI5019502",
+      "poDate": "2025-09-18",
+      "vendor": {
+        "id": "v-002",
+        "code": "V0025",
+        "name": "SUPREME POLYMERS LTD",
+        "address": "45 GIDC Estate, Ahmedabad, Gujarat 380015",
+        "contactPerson": "Amit Patel",
+        "phone": "+91-79-98765432",
+        "email": "amit@supremepolymers.com"
+      },
+      "category": "INDIRECT",
+      "status": "Authorised",
+      "items": [
+        {
+          "id": "item-003",
+          "itemCode": "P2250300",
+          "itemName": "LDPE Granules",
+          "hsnCode": "39011000",
+          "description": "Low Density Polyethylene Granules, Grade A",
+          "quantity": 2000,
+          "uom": "KGS",
+          "rate": 95.0,
+          "discount": 2,
+          "gst": 18,
+          "amount": 219296
+        }
+      ],
+      "totalValue": 219296,
+      "currency": "INR",
+      "paymentTerms": "60 Days from invoice date",
+      "shippingAddress": "U02 (B69) FGS, Indica Industries Pvt. Ltd.",
+      "remarks": ""
+    },
+    {
+      "id": "po-003",
+      "poNumber": "DI5019503",
+      "poDate": "2025-09-20",
+      "vendor": {
+        "id": "v-003",
+        "code": "V0156",
+        "name": "TECHNO CHEMICALS INC",
+        "address": "78 Chemical Zone, Vadodara, Gujarat 390001",
+        "contactPerson": "Suresh Mehta",
+        "phone": "+91-265-87654321",
+        "email": "suresh@technochemicals.com"
+      },
+      "category": "DIRECT",
+      "status": "Released",
+      "items": [
+        {
+          "id": "item-004",
+          "itemCode": "C1105200",
+          "itemName": "Adhesive Compound",
+          "hsnCode": "35069900",
+          "description": "Industrial Grade Adhesive Compound",
+          "quantity": 500,
+          "uom": "LTR",
+          "rate": 125.0,
+          "discount": 0,
+          "gst": 18,
+          "amount": 73750
+        },
+        {
+          "id": "item-005",
+          "itemCode": "C1105201",
+          "itemName": "Solvent Cleaner",
+          "hsnCode": "38140010",
+          "description": "Industrial Solvent Cleaner - 5 Ltr Pack",
+          "quantity": 100,
+          "uom": "LTR",
+          "rate": 85.0,
+          "discount": 3,
+          "gst": 18,
+          "amount": 9717.5
+        }
+      ],
+      "totalValue": 83467.5,
+      "currency": "INR",
+      "paymentTerms": "45 Days from material receipt",
+      "shippingAddress": "U01 (C157) R/S, Indica Industries Pvt. Ltd.",
+      "remarks": "Handle with care - Chemical materials"
+    }
+  ]
+}

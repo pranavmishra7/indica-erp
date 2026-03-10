@@ -1,0 +1,739 @@
+<div class="po-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1>Purchase Orders</h1>
+      <p class="subtitle">Manage and track purchase orders</p>
+    </div>
+    <div class="header-actions">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search PO / Vendor</mat-label>
+        <input matInput [(ngModel)]="searchText" (ngModelChange)="onFilterChange()" placeholder="Search...">
+        <mat-icon matPrefix>search</mat-icon>
+      </mat-form-field>
+      
+      <mat-form-field appearance="outline" class="filter-field">
+        <mat-label>Filter by Status</mat-label>
+        <mat-select [(ngModel)]="filterStatus" (selectionChange)="onFilterChange()">
+          <mat-option value="all">All Status</mat-option>
+          <mat-option *ngFor="let status of statuses" [value]="status">{{ status }}</mat-option>
+        </mat-select>
+      </mat-form-field>
+
+      <button mat-raised-button color="primary" (click)="createNewPO()">
+        <mat-icon>add</mat-icon>
+        New PO
+      </button>
+    </div>
+  </div>
+
+  <div class="po-layout">
+    <!-- Sidebar - PO List -->
+    <div class="po-sidebar">
+      <mat-card>
+        <mat-card-header>
+          <mat-card-title>PO List ({{ filteredOrders.length }})</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="po-list">
+            <div *ngFor="let po of filteredOrders" 
+                 class="po-list-item" 
+                 [class.selected]="selectedPO?.id === po.id"
+                 (click)="selectPO(po)">
+              <div class="po-item-header">
+                <strong>{{ po.poNumber }}</strong>
+                <span [class]="'badge ' + getStatusClass(po.status)">
+                  {{ po.status }}
+                </span>
+              </div>
+              <div class="po-item-details">
+                <span class="vendor-name">{{ po.vendor.name }}</span>
+                <span class="po-date">{{ po.poDate | date:'dd-MM-yyyy' }}</span>
+              </div>
+              <div class="po-item-footer">
+                <span class="po-category">{{ po.category }}</span>
+                <span class="po-amount">₹{{ po.totalValue | number:'1.2-2' }}</span>
+              </div>
+            </div>
+            
+            <div *ngIf="filteredOrders.length === 0" class="no-results">
+              <mat-icon>inbox</mat-icon>
+              <p>No purchase orders found</p>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+
+    <!-- Main Content -->
+    <div class="po-main">
+      <mat-card *ngIf="selectedPO || poForm.dirty">
+        <mat-card-header>
+          <div class="po-card-header">
+            <div>
+              <mat-card-title *ngIf="selectedPO">PO #{{ selectedPO.poNumber }}</mat-card-title>
+              <mat-card-title *ngIf="!selectedPO">New Purchase Order</mat-card-title>
+            </div>
+            <div class="header-badges">
+              <span *ngIf="selectedPO" [class]="'badge ' + getStatusClass(selectedPO.status)">
+                {{ selectedPO.status }}
+              </span>
+              <button *ngIf="selectedPO && selectedPO.status === 'Unauthorised'" 
+                      mat-raised-button 
+                      color="primary" 
+                      (click)="authorizePO()">
+                <mat-icon>check_circle</mat-icon>
+                Authorize
+              </button>
+            </div>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <mat-tab-group>
+            
+            <!-- Other Details Tab -->
+            <mat-tab label="Other Details">
+              <div class="tab-content">
+                <!-- Amendment Mode Indicator -->
+                <mat-card *ngIf="isAmending" class="amendment-indicator">
+                  <mat-card-content>
+                    <div class="amendment-alert">
+                      <mat-icon>edit_note</mat-icon>
+                      <div>
+                        <strong>Amendment Mode Active</strong>
+                        <p>Changes you make here will be tracked. Return to Amend tab to save.</p>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+
+                <form [formGroup]="poForm">
+                  <div class="form-grid">
+                    <!-- Left Column -->
+                    <div class="form-section">
+                      <h3>GST Registered Division</h3>
+                      
+                      <mat-radio-group formControlName="poDirection" class="radio-group">
+                        <mat-radio-button value="TrialPO">Trial PO</mat-radio-button>
+                        <mat-radio-button value="OpenPO">Open PO</mat-radio-button>
+                        <mat-radio-button value="OneTimePO">One Time PO</mat-radio-button>
+                        <mat-radio-button value="OrderAcceptance">Order Acceptance</mat-radio-button>
+                        <mat-radio-button value="MaterialDispatch">Material Dispatch Clearance Certificate</mat-radio-button>
+                      </mat-radio-group>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Category</mat-label>
+                        <mat-select formControlName="category">
+                          <mat-option *ngFor="let cat of categories" [value]="cat">{{ cat }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Vendor Code</mat-label>
+                        <input matInput formControlName="vendorCode">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Vendor Name</mat-label>
+                        <input matInput formControlName="vendorName">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Currency</mat-label>
+                        <mat-select formControlName="currency">
+                          <mat-option *ngFor="let curr of currencies" [value]="curr">{{ curr }}</mat-option>
+                        </mat-select>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Currency Conversion</mat-label>
+                        <input matInput type="number" formControlName="currencyConv" step="0.001">
+                      </mat-form-field>
+
+                      <div class="checkbox-group">
+                        <mat-checkbox formControlName="qualityAssured">Quality Assured</mat-checkbox>
+                      </div>
+
+                      <h3>Terms & Conditions</h3>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Payment Terms</mat-label>
+                        <textarea matInput formControlName="paymentTerms" rows="2"></textarea>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Mode of Transport</mat-label>
+                        <input matInput formControlName="modeOfTransport">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Price Basis</mat-label>
+                        <input matInput formControlName="priceBasis">
+                      </mat-form-field>
+                    </div>
+
+                    <!-- Right Column -->
+                    <div class="form-section">
+                      <h3>For Query</h3>
+                      
+                      <div class="query-grid">
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'Unauthorised'">Unauthorised</mat-checkbox>
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'Authorised'">Authorised</mat-checkbox>
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'Printed'">Printed</mat-checkbox>
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'Released'">Released</mat-checkbox>
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'WithFinance'">With Finance</mat-checkbox>
+                        <mat-checkbox [checked]="poForm.get('status')?.value === 'Cancelled'">Cancelled</mat-checkbox>
+                      </div>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>PO Number</mat-label>
+                        <input matInput formControlName="poNumber">
+                        <button mat-icon-button matSuffix>
+                          <mat-icon>search</mat-icon>
+                        </button>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>PO Date</mat-label>
+                        <input matInput [matDatepicker]="poDatePicker" formControlName="poDate">
+                        <mat-datepicker-toggle matSuffix [for]="poDatePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #poDatePicker></mat-datepicker>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>PO Eff. Date</mat-label>
+                        <input matInput [matDatepicker]="poEffDatePicker" formControlName="poEffDate">
+                        <mat-datepicker-toggle matSuffix [for]="poEffDatePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #poEffDatePicker></mat-datepicker>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>PO End Date</mat-label>
+                        <input matInput [matDatepicker]="poEndDatePicker" formControlName="poEndDate">
+                        <mat-datepicker-toggle matSuffix [for]="poEndDatePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #poEndDatePicker></mat-datepicker>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>PO Amend Date</mat-label>
+                        <input matInput [matDatepicker]="poAmendDatePicker" formControlName="poAmendDate">
+                        <mat-datepicker-toggle matSuffix [for]="poAmendDatePicker"></mat-datepicker-toggle>
+                        <mat-datepicker #poAmendDatePicker></mat-datepicker>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Shipping Address</mat-label>
+                        <textarea matInput formControlName="shippingAddress" rows="3"></textarea>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Remarks</mat-label>
+                        <textarea matInput formControlName="remarks" rows="2"></textarea>
+                      </mat-form-field>
+
+                      <div class="total-display">
+                        <h4>PO Value</h4>
+                        <div class="total-amount">₹{{ calculateTotals() | number:'1.2-2' }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </mat-tab>
+
+            <!-- Items Tab -->
+            <mat-tab label="Items">
+              <div class="tab-content">
+                <!-- Amendment Mode Indicator -->
+                <mat-card *ngIf="isAmending" class="amendment-indicator">
+                  <mat-card-content>
+                    <div class="amendment-alert">
+                      <mat-icon>edit_note</mat-icon>
+                      <div>
+                        <strong>Amendment Mode Active</strong>
+                        <p>Changes you make here will be tracked. Return to Amend tab to save.</p>
+                      </div>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+
+                <div class="items-toolbar">
+                  <h3>Purchase Order Items</h3>
+                  <button mat-raised-button color="accent" (click)="addNewItem()">
+                    <mat-icon>add</mat-icon>
+                    Add Item
+                  </button>
+                </div>
+
+                <form [formGroup]="itemsForm">
+                  <div class="items-table-container">
+                    <table class="items-table" formArrayName="items">
+                      <thead>
+                        <tr>
+                          <th style="width: 50px">#</th>
+                          <th style="width: 120px">Item Code*</th>
+                          <th style="width: 150px">Item Name</th>
+                          <th style="width: 100px">HSN Code</th>
+                          <th style="width: 200px">Description</th>
+                          <th style="width: 100px">Quantity*</th>
+                          <th style="width: 80px">UOM</th>
+                          <th style="width: 100px">Rate*</th>
+                          <th style="width: 80px">Disc %</th>
+                          <th style="width: 80px">GST %</th>
+                          <th style="width: 120px">Amount</th>
+                          <th style="width: 100px">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr *ngFor="let item of itemsArray.controls; let i = index" [formGroupName]="i">
+                          <td>{{ i + 1 }}</td>
+                          <td>
+                            <input matInput formControlName="itemCode" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput formControlName="itemName" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput formControlName="hsnCode" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput formControlName="description" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput type="number" formControlName="quantity" 
+                                   (change)="calculateItemAmount(i)" class="table-input">
+                          </td>
+                          <td>
+                            <select formControlName="uom" class="table-select">
+                              <option *ngFor="let uom of uomOptions" [value]="uom">{{ uom }}</option>
+                            </select>
+                          </td>
+                          <td>
+                            <input matInput type="number" formControlName="rate" 
+                                   (change)="calculateItemAmount(i)" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput type="number" formControlName="discount" 
+                                   (change)="calculateItemAmount(i)" class="table-input">
+                          </td>
+                          <td>
+                            <input matInput type="number" formControlName="gst" 
+                                   (change)="calculateItemAmount(i)" class="table-input">
+                          </td>
+                          <td class="amount-cell">
+                            <strong>{{ getItemsFormGroup(i).get('amount')?.value | number:'1.2-2' }}</strong>
+                          </td>
+                          <td>
+                            <button mat-icon-button color="warn" (click)="deleteItem(i)" type="button">
+                              <mat-icon>delete</mat-icon>
+                            </button>
+                          </td>
+                        </tr>
+                        <tr *ngIf="itemsArray.length === 0">
+                          <td colspan="12" class="no-items">
+                            No items added. Click "Add Item" to add items.
+                          </td>
+                        </tr>
+                      </tbody>
+                      <tfoot>
+                        <tr class="totals-row">
+                          <td colspan="10" class="text-right"><strong>Total Amount:</strong></td>
+                          <td colspan="2" class="total-amount">
+                            <strong>₹{{ calculateTotals() | number:'1.2-2' }}</strong>
+                          </td>
+                        </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                </form>
+
+                <!-- GST Section -->
+                <div class="gst-section" *ngIf="itemsArray.length > 0">
+                  <div class="gst-card">
+                    <h4>GST Summary</h4>
+                    <div class="gst-grid">
+                      <div class="gst-item">
+                        <label>SGST</label>
+                        <input type="number" value="0.00" readonly>
+                      </div>
+                      <div class="gst-item">
+                        <label>UGST</label>
+                        <input type="number" value="0.00" readonly>
+                      </div>
+                      <div class="gst-item">
+                        <label>CGST</label>
+                        <input type="number" value="0.00" readonly>
+                      </div>
+                      <div class="gst-item">
+                        <label>IGST</label>
+                        <input type="number" value="12.00" readonly>
+                      </div>
+                      <div class="gst-item">
+                        <label>CESS</label>
+                        <input type="number" value="0.00" readonly>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+
+            <!-- PO Note Tab -->
+            <mat-tab label="PO Note">
+              <div class="tab-content">
+                <form [formGroup]="poForm">
+                  <div class="note-grid">
+                    <!-- GST Insurance -->
+                    <div class="note-section">
+                      <h3>GST Insurance</h3>
+                      
+                      <mat-radio-group formControlName="insuranceType" class="radio-inline">
+                        <mat-radio-button value="None">None</mat-radio-button>
+                        <mat-radio-button value="Vendor">Vendor</mat-radio-button>
+                        <mat-radio-button value="US">US</mat-radio-button>
+                      </mat-radio-group>
+
+                      <div class="inline-fields">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Percentage</mat-label>
+                          <input matInput type="number" formControlName="insurancePercentage">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Value</mat-label>
+                          <input matInput type="number" formControlName="insuranceValue">
+                        </mat-form-field>
+                      </div>
+
+                      <div class="gst-inputs">
+                        <mat-form-field appearance="outline">
+                          <mat-label>SGST</mat-label>
+                          <input matInput type="number" formControlName="gstInsuranceSGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>UGST</mat-label>
+                          <input matInput type="number" formControlName="gstInsuranceUGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>CGST</mat-label>
+                          <input matInput type="number" formControlName="gstInsuranceCGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>IGST</mat-label>
+                          <input matInput type="number" formControlName="gstInsuranceIGST">
+                        </mat-form-field>
+                      </div>
+                    </div>
+
+                    <!-- GST Freight -->
+                    <div class="note-section">
+                      <h3>GST Freight</h3>
+                      
+                      <mat-radio-group formControlName="freightType" class="radio-inline">
+                        <mat-radio-button value="None">None</mat-radio-button>
+                        <mat-radio-button value="Vendor">Vendor</mat-radio-button>
+                        <mat-radio-button value="US">US</mat-radio-button>
+                      </mat-radio-group>
+
+                      <div class="inline-fields">
+                        <mat-form-field appearance="outline">
+                          <mat-label>Percentage</mat-label>
+                          <input matInput type="number" formControlName="freightPercentage">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>Value</mat-label>
+                          <input matInput type="number" formControlName="freightValue">
+                        </mat-form-field>
+                      </div>
+
+                      <div class="gst-inputs">
+                        <mat-form-field appearance="outline">
+                          <mat-label>SGST</mat-label>
+                          <input matInput type="number" formControlName="gstFreightSGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>UGST</mat-label>
+                          <input matInput type="number" formControlName="gstFreightUGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>CGST</mat-label>
+                          <input matInput type="number" formControlName="gstFreightCGST">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>IGST</mat-label>
+                          <input matInput type="number" formControlName="gstFreightIGST">
+                        </mat-form-field>
+                      </div>
+                    </div>
+
+                    <!-- Packing & Forwarding -->
+                    <div class="note-section">
+                      <h3>Packing & Forwarding</h3>
+                      
+                      <div class="inline-fields">
+                        <mat-form-field appearance="outline">
+                          <mat-label>In %</mat-label>
+                          <input matInput type="number" formControlName="packingInPercent">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline">
+                          <mat-label>In Value</mat-label>
+                          <input matInput type="number" formControlName="packingInValue">
+                        </mat-form-field>
+                      </div>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Despatch By</mat-label>
+                        <input matInput formControlName="despatchBy">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Banker</mat-label>
+                        <input matInput formControlName="banker">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Special Instruction</mat-label>
+                        <textarea matInput formControlName="spInstruction" rows="2"></textarea>
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Transporter</mat-label>
+                        <input matInput formControlName="transporter">
+                      </mat-form-field>
+                    </div>
+
+                    <!-- Authorised Signatory -->
+                    <div class="note-section">
+                      <h3>Authorised Signatory</h3>
+                      
+                      <mat-form-field appearance="outline">
+                        <mat-label>Signatory Name 1</mat-label>
+                        <input matInput formControlName="signatoryName1">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Designation</mat-label>
+                        <input matInput formControlName="designation1">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Signatory Name 2</mat-label>
+                        <input matInput formControlName="signatoryName2">
+                      </mat-form-field>
+
+                      <mat-form-field appearance="outline">
+                        <mat-label>Designation</mat-label>
+                        <input matInput formControlName="designation2">
+                      </mat-form-field>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </mat-tab>
+
+            <!-- Cancel PO Tab -->
+            <mat-tab label="Cancel PO">
+              <div class="tab-content">
+                <div class="cancel-section">
+                  <mat-icon class="warning-icon">warning</mat-icon>
+                  <h2>Cancel Purchase Order</h2>
+                  <p>This action will mark the purchase order as <strong>CANCELLED</strong>.</p>
+                  <p>The PO will remain in the system but cannot be processed further.</p>
+                  
+                  <div class="cancel-actions">
+                    <button mat-raised-button color="warn" (click)="cancelPO()" *ngIf="selectedPO && selectedPO.status !== 'Cancelled'">
+                      <mat-icon>cancel</mat-icon>
+                      Confirm Cancellation
+                    </button>
+                    <div *ngIf="selectedPO && selectedPO.status === 'Cancelled'" class="cancelled-message">
+                      <mat-icon>check_circle</mat-icon>
+                      This PO is already cancelled
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </mat-tab>
+
+            <!-- Amend Tab -->
+            <mat-tab label="Amend">
+              <div class="tab-content">
+                <div class="amend-section">
+                  <div class="amend-header">
+                    <div>
+                      <h3>Amendment Management</h3>
+                      <p class="info-text">Track and manage all amendments made to this purchase order</p>
+                    </div>
+                    <div class="amend-actions" *ngIf="selectedPO && !isAmending">
+                      <button mat-raised-button color="accent" (click)="startAmendment()"
+                              [disabled]="selectedPO.status === 'Cancelled' || selectedPO.status === 'Unauthorised'">
+                        <mat-icon>edit</mat-icon>
+                        Start Amendment
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Amendment Mode Active -->
+                  <mat-card *ngIf="isAmending" class="amendment-mode-card">
+                    <mat-card-content>
+                      <div class="amendment-mode-header">
+                        <mat-icon>edit_note</mat-icon>
+                        <h4>Amendment Mode Active</h4>
+                      </div>
+                      <p>Make your changes in the Other Details or Items tabs. Changes are tracked automatically.</p>
+                      
+                      <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Amendment Reason *</mat-label>
+                        <textarea matInput [(ngModel)]="amendmentReason" rows="3" 
+                                  placeholder="Explain why this PO is being amended..."></textarea>
+                      </mat-form-field>
+
+                      <div class="amendment-mode-actions">
+                        <button mat-raised-button color="primary" (click)="saveAmendment()" 
+                                [disabled]="detectedChanges.length === 0">
+                          <mat-icon>save</mat-icon>
+                          Save Amendment ({{ detectedChanges.length }} changes)
+                        </button>
+                        <button mat-raised-button color="warn" (click)="cancelAmendment()">
+                          <mat-icon>close</mat-icon>
+                          Cancel Amendment
+                        </button>
+                      </div>
+
+                      <!-- Live Preview Changes -->
+                      <div class="changes-preview">
+                        <h5>
+                          <mat-icon>visibility</mat-icon>
+                          Live Changes Preview ({{ detectedChanges.length }} detected)
+                        </h5>
+                        <div *ngIf="detectedChanges.length === 0" class="no-changes">
+                          <mat-icon>info</mat-icon>
+                          <p>No changes detected yet. Modify fields in Other Details or Items tabs and they will appear here automatically.</p>
+                        </div>
+                        <table *ngIf="detectedChanges.length > 0" class="changes-table">
+                          <thead>
+                            <tr>
+                              <th>Change Description</th>
+                              <th>Old Value</th>
+                              <th>New Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            <tr *ngFor="let change of detectedChanges">
+                              <td><strong>{{ change.description }}</strong></td>
+                              <td class="old-value">{{ change.oldValue }}</td>
+                              <td class="new-value">{{ change.newValue }}</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </mat-card-content>
+                  </mat-card>
+
+                  <!-- Amendment History -->
+                  <div class="amendment-history">
+                    <h4>Amendment History</h4>
+                    
+                    <div *ngIf="!selectedPO?.amendments || selectedPO?.amendments?.length === 0" 
+                         class="no-amendments">
+                      <mat-icon>history</mat-icon>
+                      <p>No amendments recorded for this purchase order</p>
+                      <small>Amendments track changes made to authorized POs</small>
+                    </div>
+
+                    <mat-card *ngFor="let amendment of selectedPO?.amendments" class="amendment-card">
+                      <mat-card-header>
+                        <mat-card-title>
+                          Amendment #{{ amendment.amendmentNo }}
+                          <span class="badge badge-info">{{ amendment.changes.length }} changes</span>
+                        </mat-card-title>
+                        <mat-card-subtitle>
+                          {{ amendment.amendmentDate | date:'dd MMM yyyy, hh:mm a' }} by {{ amendment.amendedBy }}
+                        </mat-card-subtitle>
+                      </mat-card-header>
+                      <mat-card-content>
+                        <div class="amendment-reason">
+                          <strong>Reason:</strong> {{ amendment.reason }}
+                        </div>
+                        
+                        <div class="changes-list">
+                          <h5>Changes Made:</h5>
+                          <table class="changes-table">
+                            <thead>
+                              <tr>
+                                <th>Field</th>
+                                <th>Old Value</th>
+                                <th>New Value</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              <tr *ngFor="let change of amendment.changes">
+                                <td><strong>{{ change.description }}</strong></td>
+                                <td class="old-value">{{ change.oldValue }}</td>
+                                <td class="new-value">{{ change.newValue }}</td>
+                              </tr>
+                            </tbody>
+                          </table>
+                        </div>
+                      </mat-card-content>
+                    </mat-card>
+                  </div>
+
+                  <!-- Help Section -->
+                  <mat-card class="help-card">
+                    <mat-card-content>
+                      <h5><mat-icon>help_outline</mat-icon> How Amendment Works</h5>
+                      <ol>
+                        <li><strong>Select an Authorized/Released PO</strong> from the list</li>
+                        <li><strong>Click "Start Amendment"</strong> to enable editing</li>
+                        <li><strong>Make changes</strong> in Other Details or Items tabs</li>
+                        <li><strong>Return to Amend tab</strong> and enter reason</li>
+                        <li><strong>Click "Save Amendment"</strong> - PO will need re-authorization</li>
+                      </ol>
+                      <p class="note">
+                        <mat-icon>info</mat-icon>
+                        Note: Only Authorised or Released POs can be amended. Amendments require re-authorization.
+                      </p>
+                    </mat-card-content>
+                  </mat-card>
+                </div>
+              </div>
+            </mat-tab>
+
+          </mat-tab-group>
+        </mat-card-content>
+
+        <!-- Action Buttons -->
+        <mat-card-actions class="card-actions">
+          <button mat-raised-button color="primary" (click)="savePO()">
+            <mat-icon>save</mat-icon>
+            Save PO
+          </button>
+          <button mat-raised-button (click)="printPO()" *ngIf="selectedPO">
+            <mat-icon>print</mat-icon>
+            Print
+          </button>
+          <button mat-raised-button (click)="authorizePO()" 
+                  *ngIf="selectedPO && selectedPO.status === 'Unauthorised'">
+            <mat-icon>check_circle</mat-icon>
+            Authorize
+          </button>
+          <button mat-raised-button (click)="createNewPO()">
+            <mat-icon>refresh</mat-icon>
+            Reset
+          </button>
+        </mat-card-actions>
+      </mat-card>
+
+      <!-- Empty State -->
+      <div *ngIf="!selectedPO && !poForm.dirty" class="empty-state">
+        <mat-icon>shopping_cart</mat-icon>
+        <h3>No Purchase Order Selected</h3>
+        <p>Select a purchase order from the list or create a new one</p>
+        <button mat-raised-button color="primary" (click)="createNewPO()" class="create-po-btn">
+          <mat-icon>add</mat-icon>
+          Create New PO
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,174 @@
+{
+  "routeSheets": [
+    {
+      "id": "rs-001",
+      "routeSheetNo": "11MMX11.5MM)7MM",
+      "operationNo": "20",
+      "operationDescription": "LAMINATION",
+      "workCentre": "01-LAMINATION",
+      "masterRoute": true,
+      "startDate": "2025-03-06",
+      "endDate": "2041-12-17",
+      "bomItems": [
+        {
+          "id": "bom-001",
+          "itemCode": "X1005404",
+          "itemDescription": "FT5404 (300MM X66M)",
+          "quantity": 1,
+          "uom": "SQM",
+          "usage": 1.0000000,
+          "rejectionPercentage": 0
+        },
+        {
+          "id": "bom-002",
+          "itemCode": "X6140510LW",
+          "itemDescription": "120 GSM GLS WHITE CIS-E, SIZE -510MM",
+          "quantity": 0.125,
+          "uom": "KGS",
+          "usage": 0.1250000,
+          "rejectionPercentage": 0
+        }
+      ],
+      "timeDetails": {
+        "setupTime": 30,
+        "runTime": 120,
+        "moveTime": 15,
+        "toolChangeTime": 10,
+        "setupCrew": 2,
+        "runCrew": 3,
+        "helperCrew": 1,
+        "timeUnit": "Minutes"
+      },
+      "createdBy": "VIKAS MISHRA",
+      "createdDate": "2025-03-06T09:00:05",
+      "updatedBy": "VIKAS MISHRA",
+      "updatedDate": "2025-09-11T10:19:23"
+    },
+    {
+      "id": "rs-002",
+      "routeSheetNo": "PKG-FASTNER-001",
+      "operationNo": "10",
+      "operationDescription": "CUTTING",
+      "workCentre": "02-CUTTING",
+      "masterRoute": false,
+      "startDate": "2025-04-15",
+      "bomItems": [
+        {
+          "id": "bom-003",
+          "itemCode": "R2205100",
+          "itemDescription": "RAW MATERIAL ROLL 510MM",
+          "quantity": 2.5,
+          "uom": "MTR",
+          "usage": 2.5000000,
+          "rejectionPercentage": 2
+        }
+      ],
+      "timeDetails": {
+        "setupTime": 20,
+        "runTime": 90,
+        "moveTime": 10,
+        "toolChangeTime": 5,
+        "setupCrew": 1,
+        "runCrew": 2,
+        "helperCrew": 1,
+        "timeUnit": "Minutes"
+      },
+      "createdBy": "RAHUL VERMA",
+      "createdDate": "2025-04-15T11:30:00"
+    },
+    {
+      "id": "rs-003",
+      "routeSheetNo": "STITCH-TAPE-045",
+      "operationNo": "30",
+      "operationDescription": "STITCHING",
+      "workCentre": "03-STITCHING",
+      "masterRoute": false,
+      "startDate": "2025-05-20",
+      "endDate": "2026-05-20",
+      "bomItems": [
+        {
+          "id": "bom-004",
+          "itemCode": "T1100250",
+          "itemDescription": "POLYESTER THREAD 250M",
+          "quantity": 0.05,
+          "uom": "MTR",
+          "usage": 0.0500000,
+          "rejectionPercentage": 1
+        },
+        {
+          "id": "bom-005",
+          "itemCode": "C5510200",
+          "itemDescription": "CUT FABRIC PIECE 200MM",
+          "quantity": 1,
+          "uom": "PCS",
+          "usage": 1.0000000,
+          "rejectionPercentage": 0.5
+        }
+      ],
+      "timeDetails": {
+        "setupTime": 15,
+        "runTime": 60,
+        "moveTime": 8,
+        "toolChangeTime": 0,
+        "setupCrew": 1,
+        "runCrew": 4,
+        "helperCrew": 0,
+        "timeUnit": "Minutes"
+      },
+      "createdBy": "PRIYA SHARMA",
+      "createdDate": "2025-05-20T14:45:00",
+      "updatedBy": "PRIYA SHARMA",
+      "updatedDate": "2025-08-10T16:20:00"
+    },
+    {
+      "id": "rs-004",
+      "routeSheetNo": "PACK-FINAL-102",
+      "operationNo": "40",
+      "operationDescription": "PACKING",
+      "workCentre": "04-PACKING",
+      "masterRoute": true,
+      "startDate": "2025-06-01",
+      "bomItems": [
+        {
+          "id": "bom-006",
+          "itemCode": "B3305020",
+          "itemDescription": "CORRUGATED BOX 50X20CM",
+          "quantity": 1,
+          "uom": "PCS",
+          "usage": 1.0000000,
+          "rejectionPercentage": 0
+        },
+        {
+          "id": "bom-007",
+          "itemCode": "T2200100",
+          "itemDescription": "PACKING TAPE 100M",
+          "quantity": 0.5,
+          "uom": "MTR",
+          "usage": 0.5000000,
+          "rejectionPercentage": 0
+        },
+        {
+          "id": "bom-008",
+          "itemCode": "L1150050",
+          "itemDescription": "PRODUCT LABEL 50X30MM",
+          "quantity": 2,
+          "uom": "PCS",
+          "usage": 2.0000000,
+          "rejectionPercentage": 0
+        }
+      ],
+      "timeDetails": {
+        "setupTime": 10,
+        "runTime": 45,
+        "moveTime": 5,
+        "toolChangeTime": 0,
+        "setupCrew": 1,
+        "runCrew": 2,
+        "helperCrew": 1,
+        "timeUnit": "Minutes"
+      },
+      "createdBy": "AMIT SINGH",
+      "createdDate": "2025-06-01T08:15:00"
+    }
+  ]
+}
