@@ -1,14 +1,9 @@
 {
   "buildCommand": "npm run build",
-  "outputDirectory": "dist/indica-erp/browser",
+  "outputDirectory": "dist/browser",
   "installCommand": "npm install",
   "routes": [
-    {
-      "handle": "filesystem"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
   ]
 }
